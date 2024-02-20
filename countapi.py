@@ -1,15 +1,13 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS, cross_origin
 import redis
 import uuid
 
 app = Flask(__name__)
-CORS(app)
 
-redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_url = "redis://default:b1c890a601454c9bb093d649c829ed5f@fly-countapi-db.upstash.io:6379"
+redis_client = redis.from_url(redis_url)
 
 @app.route('/create', methods=['GET'])
-@cross_origin
 def create_namespace():
     namespace = request.args.get('namespace', type=str)
     if not namespace:
@@ -27,7 +25,6 @@ def create_namespace():
     return jsonify({"namespace": namespace, "key": key, "value": value}), 201
 
 @app.route('/hit/<namespace>/<key>', methods=['GET'])
-@cross_origin
 def hit_namespace_key(namespace, key):
     new_value = redis_client.hincrby(namespace, key, 1)
 
